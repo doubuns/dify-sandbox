@@ -2,6 +2,7 @@ FROM python:3.10-slim-bookworm
 
 # if you located in China, you can use aliyun mirror to speed up
 # && echo "deb http://mirrors.aliyun.com/debian testing main" > /etc/apt/sources.list
+
 RUN echo "deb http://mirrors.aliyun.com/debian testing main" > /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -14,9 +15,17 @@ RUN echo "deb http://mirrors.aliyun.com/debian testing main" > /etc/apt/sources.
        expat \
        perl \
        libsqlite3-0 \
+       pyodbc \
+       unixodbc-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
+RUN curl -sSL -O https://packages.microsoft.com/config/debian/$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2 | cut -d '.' -f 1)/packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql17 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 # copy main binary to /main
 COPY main /main
 # copy initial env
